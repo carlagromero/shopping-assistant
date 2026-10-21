@@ -33,13 +33,14 @@ export const products = pgTable("products", {
   minimumOrderQuantity: integer("minimum_order_quantity").notNull().default(1),
   thumbnail: text("thumbnail"),
   images: text("images").array().notNull().default([]),
-  // Raw policy text from the API, plus the same data normalized so it can be filtered.
+  // Raw policy text from the API, plus the same data normalized (in days) so it can be filtered.
+  // A null normalized value means "not a finite number of days", e.g. a lifetime warranty.
   shippingInformation: text("shipping_information"),
   shippingDays: integer("shipping_days"),
   returnPolicy: text("return_policy"),
   returnDays: integer("return_days"),
   warrantyInformation: text("warranty_information"),
-  warrantyMonths: integer("warranty_months"),
+  warrantyDays: integer("warranty_days"),
 });
 
 export const reviews = pgTable(
