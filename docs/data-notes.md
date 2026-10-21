@@ -19,3 +19,6 @@ Source: `https://dummyjson.com/products?limit=0` (whole catalog in one call; als
 | Policies are free text, not structured | 6 shipping strings, 5 return strings, 10 warranty strings | Normalize to days/enum in the ingest step |
 | Discount tiny or odd | 0.04% to 19.61% | Store the raw value; compute final price in one place |
 | Cart endpoints are fake | DummyJSON carts are not persisted | Own carts table (as planned) |
+
+## Decisions
+- **Stock is not a user filter.** `filtersSchema` has no `inStockOnly` field: users don't ask for it and out-of-stock products (4 of 194) are useless in a shopping assistant. The product query always applies `stock > 0` (and cross-checks `availabilityStatus`). Revisit only if we want to answer "is X back in stock?".
