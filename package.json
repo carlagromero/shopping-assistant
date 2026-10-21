@@ -12,6 +12,7 @@
     "db:ingest": "tsx --env-file=.env.local scripts/ingest.ts"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.84",
     "@neondatabase/serverless": "^1.2.0",
     "ai": "^7.0.146",
     "drizzle-orm": "^0.45.4",
