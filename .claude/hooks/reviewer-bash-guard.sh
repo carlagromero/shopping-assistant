@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# PreToolUse guard for the reviewer subagent: only read-only git commands plus lint/build.
+# PreToolUse guard for the reviewer subagent: only read-only git commands plus lint/build/test.
 # Exit 2 blocks the call and sends stderr back to the agent.
 cmd=$(jq -r '.tool_input.command // ""')
 
@@ -11,8 +11,8 @@ fi
 
 case "$cmd" in
   "git status"*|"git diff"*|"git log"*|"git show"*|"git ls-files"*) exit 0 ;;
-  "pnpm lint"|"pnpm build") exit 0 ;;
+  "pnpm lint"|"pnpm build"|"pnpm test") exit 0 ;;
 esac
 
-echo "Blocked: reviewer may only run git status/diff/log/show/ls-files, pnpm lint and pnpm build. Report other checks as pending for the implementer." >&2
+echo "Blocked: reviewer may only run git status/diff/log/show/ls-files, pnpm lint, pnpm build and pnpm test. Report other checks as pending for the implementer." >&2
 exit 2
