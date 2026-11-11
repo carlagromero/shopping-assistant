@@ -36,6 +36,7 @@ pnpm db:ingest               # load the catalog
 |---|---|
 | `pnpm dev` / `pnpm build` / `pnpm start` | Next.js dev server, build, production server |
 | `pnpm lint` | ESLint |
+| `pnpm test` / `pnpm test:watch` | Vitest: run once / watch mode |
 | `pnpm db:push` | Push the schema to the database (no migration files) |
 | `pnpm db:studio` | Drizzle Studio |
 | `pnpm db:ingest` | Run the ingest (`tsx --env-file=.env.local scripts/ingest.ts`) |
@@ -43,11 +44,11 @@ pnpm db:ingest               # load the catalog
 
 To check the ingest without touching the database: `pnpm tsx scripts/ingest.ts --dry-run`.
 
-There is no test runner configured.
+Vitest is configured for pure-logic unit tests (`environment: node`, no jsdom). There are no tests yet, so `pnpm test` exits with "No test files found".
 
 ## Stack
 
-Next.js 16.4.2 (App Router, `cacheComponents` and `partialPrefetching` enabled), React 19.3, Tailwind CSS v4, Drizzle ORM + Neon, Vercel AI SDK v7 with `@ai-sdk/anthropic`, zod 4.
+Next.js 16.4.2 (App Router, `cacheComponents` and `partialPrefetching` enabled), React 19.3, Tailwind CSS v4, Drizzle ORM + Neon, Vercel AI SDK v7 with `@ai-sdk/anthropic`, zod 4, Vitest.
 
 ## Roadmap
 
@@ -56,6 +57,7 @@ Not built yet:
 - A UI and an API route on top of `parseQuery` + `searchProducts`
 - Carts (DummyJSON carts are not persisted, so this needs an own table)
 - Final price with discount computed in one place (search currently compares the list price)
+- Unit tests for the pure logic
 - Evals for query parsing
 - Logging / observability
 - Tests

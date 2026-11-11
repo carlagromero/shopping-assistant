@@ -11,7 +11,9 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:ingest": "tsx --env-file=.env.local scripts/ingest.ts",
-    "try": "tsx --env-file=.env.local scripts/try-query.ts"
+    "try": "tsx --env-file=.env.local scripts/try-query.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.84",
@@ -33,7 +35,9 @@
     "eslint-config-next": "16.4.2",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.1.0"
   },
   "packageManager": "pnpm@12.14.0"
 }

@@ -26,13 +26,13 @@ What is true in the repo today. See `CLAUDE.md` for conventions and `docs/data-n
 
 ### Commands (all exist in `package.json`)
 
-`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm db:push`, `pnpm db:studio`, `pnpm db:ingest`, `pnpm try "<query>"`. Dry-run the ingest with `pnpm tsx scripts/ingest.ts --dry-run`. There is no test script.
+`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`, `pnpm test:watch`, `pnpm db:push`, `pnpm db:studio`, `pnpm db:ingest`, `pnpm try "<query>"`. Dry-run the ingest with `pnpm tsx scripts/ingest.ts --dry-run`. `pnpm test` runs Vitest (`vitest run`, config in `vitest.config.mts`, `node` environment, files named `*.test.ts`). It is set up for pure-logic unit tests only: no jsdom or React Testing Library. No test files exist yet, so `pnpm test` currently exits 1 with "No test files found".
 
 ### Known gaps
 
 - **Prompts are inline.** The system prompt is a string constant in `src/lib/parse-query.ts`; the per-field prompts are the `.describe()` calls in `src/lib/filters.ts`. No prompt versioning or separate prompt files.
 - **Model is hardcoded** in `parse-query.ts` and wired to the Anthropic provider directly, not through AI Gateway. No fallback.
-- **No evals, no tests, no logging.** There is no way to measure parsing quality yet.
+- **No evals, no tests written, no logging.** The Vitest runner is configured but there are no tests, and there is no way to measure parsing quality yet.
 - **`CATEGORIES` is duplicated** from the `categories` table by hand; a new category in the API won't reach the model until the list is edited.
 - **No final price.** `searchProducts` filters and sorts on the list price. `discountPercentage` is stored but not applied anywhere, although the data conventions call for one single place to compute it.
 - **Prices can be extreme** ($0.79–$36,999.99); budget filters have no outlier handling.
@@ -50,4 +50,5 @@ Where we want to go. None of this exists yet.
 - Own `carts` table and cart logic (without `minimumOrderQuantity`).
 - One function that computes the final price with discount, used by search and carts.
 - `CATEGORIES` derived from the database instead of hardcoded.
-- Tests and deployment (TODO: decide the target; Vercel is the likely candidate but nothing is configured).
+- Unit tests for the pure logic (policy parsers, `filtersSchema`, the query-building part of `searchProducts`). Some of it needs refactoring first: the parsers live in `scripts/ingest.ts`, which runs the ingest on import, and `src/lib/search.ts` imports `src/db` at the top.
+- Deployment (TODO: decide the target; Vercel is the likely candidate but nothing is configured).

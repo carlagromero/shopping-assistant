@@ -21,7 +21,9 @@ Package manager is pnpm (`pnpm-workspace.yaml` only sets `allowBuilds`; this is 
 - `pnpm db:ingest`: run `scripts/ingest.ts` with `.env.local` loaded. Add `--dry-run` through `pnpm tsx scripts/ingest.ts --dry-run` to skip the database.
 - `pnpm try "<query>"`: run a query end to end (parse, then search)
 
-There is no test runner. Standalone scripts run with `tsx` and `--env-file=.env.local`.
+- `pnpm test` / `pnpm test:watch` — Vitest (`vitest.config.mts`: `node` environment, `vite-tsconfig-paths` so the `@/*` alias works). For pure-logic unit tests only; no jsdom or React Testing Library. No test files exist yet, so `pnpm test` exits 1 until the first one is added. Tests must not import `src/db` or call the LLM.
+
+Standalone scripts run with `tsx` and `--env-file=.env.local`.
 
 ## Environment
 
