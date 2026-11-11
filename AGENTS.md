@@ -21,7 +21,7 @@ What is true in the repo today. See `CLAUDE.md` for conventions and `docs/data-n
 - `src/db/schema.ts`: `categories`, `products`, `reviews`. `src/db/index.ts` exports `db` and throws at import if `DATABASE_URL` is missing.
 - `src/lib/filters.ts`: `CATEGORIES` (hardcoded list of 24 slugs), `filtersSchema` (zod), `Filters` type.
 - `src/lib/policy-parsers.ts`: `parseShippingDays`, `parseReturnDays`, `parseWarrantyDays`. Pure functions with no side effects that turn the policy text into day counts and throw on unknown text. Used by `scripts/ingest.ts`. Tested in `src/lib/policy-parsers.test.ts` (36 tests, one per distinct string in the catalog plus the failure cases).
-- `src/lib/parse-query.ts`: `parseQuery(query)` using `generateText` + `Output.object`, model `claude-haiku-5-5` through `@ai-sdk/anthropic` (needs `ANTHROPIC_API_KEY`), `temperature: 0.0`.
+- `src/lib/parse-query.ts`: `parseQuery(query)` using `generateText` + `Output.object`, model `claude-haiku-5-5` through `@ai-sdk/anthropic` (needs `ANTHROPIC_API_KEY`). No `temperature` is set: `claude-haiku-5-5` does not support it and the SDK warns that it is ignored.
 - `src/lib/search.ts`: `searchProducts(filters, limit = 24)`. Always applies `stock > 0` and `availabilityStatus != "Out of Stock"`. Brand is a case-insensitive exact match. Each keyword must appear in title, description or tags. Default order is rating desc, then id.
 - `src/app/`: create-next-app placeholder (`page.tsx`, `layout.tsx`). No routes, no UI.
 
