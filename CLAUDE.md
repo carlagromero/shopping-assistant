@@ -20,8 +20,9 @@ Package manager is pnpm (`pnpm-workspace.yaml` only sets `allowBuilds`; this is 
 - `pnpm db:studio`: Drizzle Studio
 - `pnpm db:ingest`: run `scripts/ingest.ts` with `.env.local` loaded. Add `--dry-run` through `pnpm tsx scripts/ingest.ts --dry-run` to skip the database.
 - `pnpm try "<query>"`: run a query end to end (parse, then search)
+- `pnpm test` / `pnpm test:watch`: Vitest (`vitest.config.mts`: `node` environment, `vite-tsconfig-paths` so the `@/*` alias works). Pure-logic unit tests only, in `*.test.ts` files next to the code; no jsdom or React Testing Library.
 
-- `pnpm test` / `pnpm test:watch` — Vitest (`vitest.config.mts`: `node` environment, `vite-tsconfig-paths` so the `@/*` alias works). For pure-logic unit tests only; no jsdom or React Testing Library. No test files exist yet, so `pnpm test` exits 1 until the first one is added. Tests must not import `src/db` or call the LLM.
+Tests must not import `src/db` or call the LLM, so they run without `.env.local` and cost nothing. Logic that needs either belongs in an eval or an integration check, not here. A module with side effects on import (like `scripts/ingest.ts`, which runs the ingest) can't be tested: keep testable logic in `src/lib/`.
 
 Standalone scripts run with `tsx` and `--env-file=.env.local`.
 
@@ -37,7 +38,7 @@ Copy `.env.example` to `.env.local` and set:
 - **Data source**: DummyJSON (`https://dummyjson.com/products?limit=0` returns the whole catalog). `docs/data-notes.md` lists the data quirks and the decisions taken about them. Read it, including its Decisions section, before touching ingest, filtering, or price/stock logic.
 - **Database**: Neon serverless Postgres via `drizzle-orm/neon-http`. `src/db/index.ts` exports a single `db` with the schema attached. Tables are defined in `src/db/schema.ts`.
 - **Ingest is idempotent**: `products.id` reuses the DummyJSON id and `reviews` has a unique `(product_id, reviewer_name, date)` constraint, so re-running ingest upserts instead of duplicating. Keep it that way.
-- **Ingest parsers throw on unknown policy text on purpose**, so API format changes surface instead of being ignored.
+- **Ingest parsers throw on unknown policy text on purpose**, so API format changes surface instead of being ignored. They live in `src/lib/policy-parsers.ts` and are covered by `src/lib/policy-parsers.test.ts`, which lists every distinct policy string found in the catalog. If the catalog gains a new string, the ingest fails: add the case to the parser and to the test together.
 - **Policy fields are stored twice**: raw text (`shippingInformation`, `returnPolicy`, `warrantyInformation`) plus normalized day columns (`shippingDays`, `returnDays`, `warrantyDays`) meant for filtering. A `null` normalized value means "no finite number" (lifetime warranty).
 - **Query flow**: free text → LLM fills the zod `filtersSchema` (`src/lib/filters.ts`) → `searchProducts` turns the filters into SQL. The model never writes SQL and never sees the database. "Not mentioned" is `null` in every filter field, except `categories`, where it is an empty array. Each `.describe()` in the schema is the prompt for that field, so changing one changes model behavior.
 - **Categories are a closed list**: the model may only pick slugs from `CATEGORIES`. If a request fits none, the schema has an `intent` for that instead of forcing the closest category.

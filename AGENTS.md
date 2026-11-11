@@ -14,25 +14,27 @@ What is true in the repo today. See `CLAUDE.md` for conventions and `docs/data-n
 
 ### Pipeline
 
-`scripts/ingest.ts` (DummyJSON → Postgres) → `src/lib/parse-query.ts` (query → `Filters` via Claude Haiku) → `src/lib/search.ts` (`Filters` → SQL). `scripts/try-query.ts` runs parse + search from the CLI (`pnpm try "<query>"`). Nothing else calls these functions yet.
+`scripts/ingest.ts` (DummyJSON → Postgres, normalizing policy text with `src/lib/policy-parsers.ts`) → `src/lib/parse-query.ts` (query → `Filters` via Claude Haiku) → `src/lib/search.ts` (`Filters` → SQL). `scripts/try-query.ts` runs parse + search from the CLI (`pnpm try "<query>"`). Nothing else calls these functions yet.
 
 ### Files
 
 - `src/db/schema.ts`: `categories`, `products`, `reviews`. `src/db/index.ts` exports `db` and throws at import if `DATABASE_URL` is missing.
 - `src/lib/filters.ts`: `CATEGORIES` (hardcoded list of 24 slugs), `filtersSchema` (zod), `Filters` type.
+- `src/lib/policy-parsers.ts`: `parseShippingDays`, `parseReturnDays`, `parseWarrantyDays`. Pure functions with no side effects that turn the policy text into day counts and throw on unknown text. Used by `scripts/ingest.ts`. Tested in `src/lib/policy-parsers.test.ts` (36 tests, one per distinct string in the catalog plus the failure cases).
 - `src/lib/parse-query.ts`: `parseQuery(query)` using `generateText` + `Output.object`, model `claude-haiku-5-5` through `@ai-sdk/anthropic` (needs `ANTHROPIC_API_KEY`), `temperature: 0.0`.
 - `src/lib/search.ts`: `searchProducts(filters, limit = 24)`. Always applies `stock > 0` and `availabilityStatus != "Out of Stock"`. Brand is a case-insensitive exact match. Each keyword must appear in title, description or tags. Default order is rating desc, then id.
 - `src/app/`: create-next-app placeholder (`page.tsx`, `layout.tsx`). No routes, no UI.
 
 ### Commands (all exist in `package.json`)
 
-`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`, `pnpm test:watch`, `pnpm db:push`, `pnpm db:studio`, `pnpm db:ingest`, `pnpm try "<query>"`. Dry-run the ingest with `pnpm tsx scripts/ingest.ts --dry-run`. `pnpm test` runs Vitest (`vitest run`, config in `vitest.config.mts`, `node` environment, files named `*.test.ts`). It is set up for pure-logic unit tests only: no jsdom or React Testing Library. No test files exist yet, so `pnpm test` currently exits 1 with "No test files found".
+`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`, `pnpm test:watch`, `pnpm db:push`, `pnpm db:studio`, `pnpm db:ingest`, `pnpm try "<query>"`. Dry-run the ingest with `pnpm tsx scripts/ingest.ts --dry-run`. `pnpm test` runs Vitest (`vitest run`, config in `vitest.config.mts`, `node` environment, files named `*.test.ts`). It is set up for pure-logic unit tests only: no jsdom or React Testing Library. Today it runs 36 tests, all for the policy parsers.
 
 ### Known gaps
 
 - **Prompts are inline.** The system prompt is a string constant in `src/lib/parse-query.ts`; the per-field prompts are the `.describe()` calls in `src/lib/filters.ts`. No prompt versioning or separate prompt files.
 - **Model is hardcoded** in `parse-query.ts` and wired to the Anthropic provider directly, not through AI Gateway. No fallback.
-- **No evals, no tests written, no logging.** The Vitest runner is configured but there are no tests, and there is no way to measure parsing quality yet.
+- **No evals, no logging.** There is no way to measure parsing quality yet.
+- **Tests cover only the policy parsers.** `filtersSchema` has no tests. `searchProducts` has none either, and it can't have unit tests as written: `src/lib/search.ts` imports `src/db` at the top (which throws without `DATABASE_URL`), and `literal()` and the condition building are not exported.
 - **`CATEGORIES` is duplicated** from the `categories` table by hand; a new category in the API won't reach the model until the list is edited.
 - **No final price.** `searchProducts` filters and sorts on the list price. `discountPercentage` is stored but not applied anywhere, although the data conventions call for one single place to compute it.
 - **Prices can be extreme** ($0.79–$36,999.99); budget filters have no outlier handling.
@@ -50,5 +52,5 @@ Where we want to go. None of this exists yet.
 - Own `carts` table and cart logic (without `minimumOrderQuantity`).
 - One function that computes the final price with discount, used by search and carts.
 - `CATEGORIES` derived from the database instead of hardcoded.
-- Unit tests for the pure logic (policy parsers, `filtersSchema`, the query-building part of `searchProducts`). Some of it needs refactoring first: the parsers live in `scripts/ingest.ts`, which runs the ingest on import, and `src/lib/search.ts` imports `src/db` at the top.
+- Unit tests for the rest of the pure logic: `filtersSchema`, and the query-building part of `searchProducts` once it is split from the database call (`literal()` and the conditions in a module that doesn't import `src/db`). The policy parsers are done.
 - Deployment (TODO: decide the target; Vercel is the likely candidate but nothing is configured).
