@@ -81,6 +81,14 @@ jobs:
           fi
           blockers=$(printf '%s' "$VERDICT" | jq -r '.blockers')
           echo "Reviewer summary: $(printf '%s' "$VERDICT" | jq -r '.summary')"
+          # Fail closed: if `blockers` is not a plain integer (null, missing, negative), the
+          # comparison below errors inside an `if`, which counts as false and would pass the job.
+          case "$blockers" in
+            ''|*[!0-9]*)
+              echo "::error::The verdict has no valid blockers count (got '$blockers')."
+              exit 1
+              ;;
+          esac
           if [ "$blockers" -gt 0 ]; then
             echo "::error::The reviewer found $blockers Blocker(s). Fix them or resolve the comments, then push again."
             exit 1
