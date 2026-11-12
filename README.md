@@ -60,7 +60,6 @@ Not built yet:
 - Unit tests for the search query building (`buildSearchQuery`)
 - Evals for query parsing
 - Logging / observability
-- Tests
 - Deployment
 
 ## License
