@@ -34,7 +34,7 @@ What is true in the repo today. See `CLAUDE.md` for conventions and `docs/data-n
 
 - **Prompts are inline.** The system prompt is a string constant in `src/lib/parse-query.ts`; the per-field prompts are the `.describe()` calls in `src/lib/filters.ts`. No prompt versioning or separate prompt files.
 - **Model is hardcoded** in `parse-query.ts` and wired to the Anthropic provider directly, not through AI Gateway. No fallback.
-- **No evals, no logging.** There is no way to measure parsing quality yet.
+- **Eval cases but no eval script, no logging.** `evals/parse-query.cases.ts` holds the eval set for `parseQuery` (42 cases, 9 of them `gap`: the `.describe()` rules do not define the answer); `evals/parse-query.cases.test.ts` validates the set without calling the model. Nothing runs the cases against the model or scores them yet, so parsing quality is still not measured.
 - **Tests cover the policy parsers, `filtersSchema` and `buildSearchQuery`/`literal`.** The database call in `searchProducts` is not unit tested (it needs Neon).
 - **`CATEGORIES` is duplicated** from the `categories` table by hand; a new category in the API won't reach the model until the list is edited.
 - **No final price.** `searchProducts` filters and sorts on the list price. `discountPercentage` is stored but not applied anywhere, although the data conventions call for one single place to compute it.
