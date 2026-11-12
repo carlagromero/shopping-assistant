@@ -22,20 +22,20 @@ What is true in the repo today. See `CLAUDE.md` for conventions and `docs/data-n
 - `src/lib/filters.ts`: `CATEGORIES` (hardcoded list of 24 slugs), `filtersSchema` (zod), `Filters` type. `filtersSchema` is tested in `src/lib/filters.test.ts` (69 tests: valid input per `intent`, the `null` / `[]` convention, and rejected input).
 - `src/lib/policy-parsers.ts`: `parseShippingDays`, `parseReturnDays`, `parseWarrantyDays`. Pure functions with no side effects that turn the policy text into day counts and throw on unknown text. Used by `scripts/ingest.ts`. Tested in `src/lib/policy-parsers.test.ts` (36 tests, one per distinct string in the catalog plus the failure cases).
 - `src/lib/parse-query.ts`: `parseQuery(query)` using `generateText` + `Output.object`, model `claude-haiku-5-5` through `@ai-sdk/anthropic` (needs `ANTHROPIC_API_KEY`), `temperature: 0.0`.
-- `src/lib/search-query.ts`: `buildSearchQuery(filters)` returns `{ where, orderBy }` and `literal()` (escapes `%` and `_`). It does not import `src/db`, so it can be unit tested by rendering the result with `new PgDialect().sqlToQuery(where)`. Always applies `stock > 0` and `availabilityStatus != "Out of Stock"`. Brand is a case-insensitive exact match. Each keyword must appear in title, description or tags. Default order is rating desc, then id.
+- `src/lib/search-query.ts`: `buildSearchQuery(filters)` returns `{ where, orderBy }` and `literal()` (escapes `%` and `_`). It does not import `src/db`, so it can be unit tested by rendering the result with `new PgDialect().sqlToQuery(where)`. Always applies `stock > 0` and `availabilityStatus != "Out of Stock"`. Brand is a case-insensitive exact match. Each keyword must appear in title, description or tags. Default order is rating desc, then id. Tested in `src/lib/search-query.test.ts` (30 tests: stock conditions, user text in `params`, `literal` escaping, keywords joined with AND, order with the id tiebreaker).
 - `src/lib/search.ts`: `searchProducts(filters, limit = 24)`. A thin wrapper: runs the `buildSearchQuery` result against the database.
 - `src/app/`: create-next-app placeholder (`page.tsx`, `layout.tsx`). No routes, no UI.
 
 ### Commands (all exist in `package.json`)
 
-`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`, `pnpm test:watch`, `pnpm db:push`, `pnpm db:studio`, `pnpm db:ingest`, `pnpm try "<query>"`. Dry-run the ingest with `pnpm tsx scripts/ingest.ts --dry-run`. `pnpm test` runs Vitest (`vitest run`, config in `vitest.config.mts`, `node` environment, files named `*.test.ts`). It is set up for pure-logic unit tests only: no jsdom or React Testing Library. Today it runs 105 tests: 36 for the policy parsers and 69 for `filtersSchema`.
+`pnpm dev`, `pnpm build`, `pnpm start`, `pnpm lint`, `pnpm test`, `pnpm test:watch`, `pnpm db:push`, `pnpm db:studio`, `pnpm db:ingest`, `pnpm try "<query>"`. Dry-run the ingest with `pnpm tsx scripts/ingest.ts --dry-run`. `pnpm test` runs Vitest (`vitest run`, config in `vitest.config.mts`, `node` environment, files named `*.test.ts`). It is set up for pure-logic unit tests only: no jsdom or React Testing Library. Today it runs 135 tests: 36 for the policy parsers, 69 for `filtersSchema` and 30 for `buildSearchQuery`/`literal`.
 
 ### Known gaps
 
 - **Prompts are inline.** The system prompt is a string constant in `src/lib/parse-query.ts`; the per-field prompts are the `.describe()` calls in `src/lib/filters.ts`. No prompt versioning or separate prompt files.
 - **Model is hardcoded** in `parse-query.ts` and wired to the Anthropic provider directly, not through AI Gateway. No fallback.
 - **No evals, no logging.** There is no way to measure parsing quality yet.
-- **Tests cover the policy parsers and `filtersSchema`.** `buildSearchQuery`/`literal` have no tests yet (they are testable now; tracked in #3). The database call in `searchProducts` is not unit tested.
+- **Tests cover the policy parsers, `filtersSchema` and `buildSearchQuery`/`literal`.** The database call in `searchProducts` is not unit tested (it needs Neon).
 - **`CATEGORIES` is duplicated** from the `categories` table by hand; a new category in the API won't reach the model until the list is edited.
 - **No final price.** `searchProducts` filters and sorts on the list price. `discountPercentage` is stored but not applied anywhere, although the data conventions call for one single place to compute it.
 - **Prices can be extreme** ($0.79–$36,999.99); budget filters have no outlier handling.
@@ -53,5 +53,4 @@ Where we want to go. None of this exists yet.
 - Own `carts` table and cart logic (without `minimumOrderQuantity`).
 - One function that computes the final price with discount, used by search and carts.
 - `CATEGORIES` derived from the database instead of hardcoded.
-- Unit tests for the rest of the pure logic: `buildSearchQuery`/`literal` (for example: the stock condition is always present, user text is escaped and passed as a parameter). The policy parsers and `filtersSchema` are done.
 - Deployment (TODO: decide the target; Vercel is the likely candidate but nothing is configured).

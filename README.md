@@ -44,7 +44,7 @@ pnpm db:ingest               # load the catalog
 
 To check the ingest without touching the database: `pnpm tsx scripts/ingest.ts --dry-run`.
 
-Vitest is configured for pure-logic unit tests (`environment: node`, no jsdom). 105 tests cover the policy parsers and the filters schema. They need no `.env.local`, no database and no model call.
+Vitest is configured for pure-logic unit tests (`environment: node`, no jsdom). 135 tests cover the policy parsers, the filters schema and the search query building. They need no `.env.local`, no database and no model call.
 
 ## Stack
 
@@ -57,7 +57,6 @@ Not built yet:
 - A UI and an API route on top of `parseQuery` + `searchProducts`
 - Carts (DummyJSON carts are not persisted, so this needs an own table)
 - Final price with discount computed in one place (search currently compares the list price)
-- Unit tests for the search query building (`buildSearchQuery`)
 - Evals for query parsing
 - Logging / observability
 - Deployment
