@@ -23,9 +23,16 @@ describe("eval set for parseQuery", () => {
     expect(note.trim()).not.toBe("");
   });
 
-  it.each(cases)("$id: acceptable keywords are valid keyword lists", ({ acceptableKeywords }) => {
-    for (const keywords of acceptableKeywords ?? []) {
-      expect(filtersSchema.shape.keywords.safeParse(keywords).success).toBe(true);
+  // Keyword rules from issue #10: at most 3 words, each lowercase with no whitespace.
+  // Singular and English cannot be checked here; they are reviewed by hand.
+  it.each(cases)("$id: expected and acceptable keywords follow the keyword rules", (c) => {
+    const lists = [c.expected.keywords ?? [], ...(c.acceptableKeywords ?? [])];
+    for (const keywords of lists) {
+      expect(keywords.length).toBeLessThanOrEqual(3);
+      for (const word of keywords) {
+        expect(word).toMatch(/^\S+$/);
+        expect(word).toBe(word.toLowerCase());
+      }
     }
   });
 

@@ -41,12 +41,12 @@ export const cases = [
   // ---------------------------------------------------------------------------------------
   {
     id: "category-keywords-max-price",
-    query: "red leather shoes for men under $80",
+    query: "brown suede shoes for men under $80",
     expected: {
       ...NOT_MENTIONED,
       intent: "search",
       categories: ["mens-shoes"],
-      keywords: ["red", "leather"],
+      keywords: ["brown", "suede"],
       maxPrice: 80,
     },
     note: "One category, two keywords and a maximum price in a single query.",
