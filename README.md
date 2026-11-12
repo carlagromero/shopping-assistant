@@ -57,7 +57,7 @@ Not built yet:
 - A UI and an API route on top of `parseQuery` + `searchProducts`
 - Carts (DummyJSON carts are not persisted, so this needs an own table)
 - Final price with discount computed in one place (search currently compares the list price)
-- Evals for query parsing
+- An eval script that runs the query parsing cases in `evals/` against the model and scores them
 - Logging / observability
 - Deployment
 
