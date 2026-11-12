@@ -44,6 +44,18 @@ Copy `.env.example` to `.env.local` and set:
 - **Categories are a closed list**: the model may only pick slugs from `CATEGORIES`. If a request fits none, the schema has an `intent` for that instead of forcing the closest category.
 - **Carts**: DummyJSON carts aren't persisted, so carts will need an own table.
 
+## Workflow
+
+`main` is protected: no direct pushes, every change goes through a pull request.
+
+1. Start from a GitHub issue (template: Goal, Acceptance criteria, Out of scope, Notes). Trivial doc fixes may skip the issue.
+2. Branch from `main` as `<type>/<issue number>-<slug>` (for example `test/2-filters-schema-tests`).
+3. Open a PR from the template, with `Closes #N` in the description. CI (`.github/workflows/ci.yml`) runs lint, tests, build and typecheck.
+4. The AI review (`.github/workflows/ai-review.yml`) reads the linked issue and the diff, follows `.claude/agents/reviewer.md`, and leaves inline comments. A Blocker fails the `ai-review` check.
+5. Resolve every review conversation, then squash and merge.
+
+Keep a PR to the scope of its issue. Don't commit or push unless asked.
+
 ## Data conventions to preserve
 
 - `brand` is nullable (missing for ~half the catalog); don't assume it's present.
