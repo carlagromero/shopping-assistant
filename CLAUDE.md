@@ -20,6 +20,7 @@ Package manager is pnpm (`pnpm-workspace.yaml` only sets `allowBuilds`; this is 
 - `pnpm db:studio`: Drizzle Studio
 - `pnpm db:ingest`: run `scripts/ingest.ts` with `.env.local` loaded. Add `--dry-run` through `pnpm tsx scripts/ingest.ts --dry-run` to skip the database.
 - `pnpm try "<query>"`: run a query end to end (parse, then search)
+- `pnpm eval`: run the `parseQuery` eval set against the real model and print a score report (`tsx --env-file=.env.local`). Options: `--case <id>` for one case, `--runs <n>` to repeat the set and report per-case pass rate. It calls the model and costs money, so it is not part of `pnpm test` or CI. Results go to `evals/results/` (gitignored). The scoring rules live in `evals/score.ts` (pure, unit tested).
 - `pnpm test` / `pnpm test:watch`: Vitest (`vitest.config.mts`: `node` environment, `vite-tsconfig-paths` so the `@/*` alias works). Pure-logic unit tests only, in `*.test.ts` files next to the code; no jsdom or React Testing Library.
 
 Tests must not import `src/db` or call the LLM, so they run without `.env.local` and cost nothing. Logic that needs either belongs in an eval or an integration check, not here. A module with side effects on import (like `scripts/ingest.ts`, which runs the ingest) can't be tested: keep testable logic in `src/lib/`.

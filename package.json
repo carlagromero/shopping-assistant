@@ -13,7 +13,8 @@
     "db:ingest": "tsx --env-file=.env.local scripts/ingest.ts",
     "try": "tsx --env-file=.env.local scripts/try-query.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "eval": "tsx --env-file=.env.local evals/run-parse-query.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.84",
