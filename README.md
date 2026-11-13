@@ -40,11 +40,12 @@ pnpm db:ingest               # load the catalog
 | `pnpm db:push` | Push the schema to the database (no migration files) |
 | `pnpm db:studio` | Drizzle Studio |
 | `pnpm db:ingest` | Run the ingest (`tsx --env-file=.env.local scripts/ingest.ts`) |
+| `pnpm eval [--case <id>] [--runs <n>]` | Score `parseQuery` against the eval set in `evals/` with the real model (costs money; needs `ANTHROPIC_API_KEY`; never runs in CI). Prints a report and writes `evals/results/<timestamp>.json` (gitignored) |
 | `pnpm try "<query>"` | Parse a query and search with the result, e.g. `pnpm try "men's shoes under $50, highly rated"` |
 
 To check the ingest without touching the database: `pnpm tsx scripts/ingest.ts --dry-run`.
 
-Vitest is configured for pure-logic unit tests (`environment: node`, no jsdom). 135 tests cover the policy parsers, the filters schema and the search query building. They need no `.env.local`, no database and no model call.
+Vitest is configured for pure-logic unit tests (`environment: node`, no jsdom). 299 tests cover the policy parsers, the filters schema, the search query building, the eval set and the eval scoring and report. They need no `.env.local`, no database and no model call.
 
 ## Stack
 
